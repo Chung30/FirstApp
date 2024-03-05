@@ -5,6 +5,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.ContextMenu;
 import android.view.Menu;
@@ -118,11 +119,24 @@ public class MainActivity extends AppCompatActivity {
 
         }
         else if(item.getItemId()==R.id.context_menu_item2){
-            Toast.makeText(this, "Sort by phone", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Delete", Toast.LENGTH_SHORT).show();
+            listContact.remove(selectedItemId);
+            contactAdapter.notifyDataSetChanged();
         }
         else if(item.getItemId()==R.id.context_menu_item3){
+            Intent intent = new Intent(Intent.ACTION_DIAL, Uri.parse("tel:" +
+                    listContact.get(selectedItemId).getPhone()));
+            startActivity(intent);
         }
         else if(item.getItemId()==R.id.context_menu_item4){
+//            Intent intent = new Intent(Intent.ACTION_SENDTO, Uri.parse("sms:" +
+//                    listContact.get(selectedItemId).getPhone()));
+            Intent intent = new Intent(Intent.ACTION_SENDTO, Uri.parse("email:" +
+                    listContact.get(selectedItemId).getName()));
+            intent.putExtra(Intent.EXTRA_SUBJECT, "Subject");
+            intent.putExtra(Intent.EXTRA_TEXT, "Body");
+            intent.setData(Uri.parse("mailto:"));
+            startActivity(intent);
         }
         return super.onContextItemSelected(item);
     }
