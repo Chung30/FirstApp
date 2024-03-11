@@ -29,6 +29,7 @@ public class MainActivity extends AppCompatActivity {
     ArrayList<Contact> listContact = new ArrayList<>();
 
     private int selectedItemId;
+    private MyDB db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,15 +37,12 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         Init();
-        UpdateData();
+
+//        UpdateData();
         setResult(150);
         Intent intent = new Intent(this, SubActivity.class);
         fab.setOnClickListener(v->{
             startActivityForResult(intent, 100);
-        });
-
-        listView.setOnItemClickListener((parent, view, position, id) -> {
-
         });
     }
 
@@ -73,7 +71,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void UpdateData() {
-        listContact.add(new Contact(1, "Chung", "011"));
+        db.addContact(new Contact(1, "Chung1", "001"));
+        db.addContact(new Contact(2, "Chung2", "001"));
+        db.addContact(new Contact(3, "Chung3", "001"));
     }
 
     @Override
@@ -144,7 +144,8 @@ public class MainActivity extends AppCompatActivity {
     private void Init() {
         listView = findViewById(R.id.listView);
         fab = findViewById(R.id.fab);
-
+        db = new MyDB(this, "ContactDB", null, 1);
+        listContact = db.getAllContact();
         contactAdapter = new ContactAdapter(listContact, this);
         contactAdapter.notifyDataSetChanged();
         listView.setAdapter(contactAdapter);
