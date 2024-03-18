@@ -4,9 +4,14 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -14,6 +19,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -27,9 +33,11 @@ public class MainActivity extends AppCompatActivity {
     private FloatingActionButton fab;
     ContactAdapter contactAdapter;
     ArrayList<Contact> listContact = new ArrayList<>();
+    private EditText edtFineName;
 
     private int selectedItemId;
     private MyDB db;
+    private ContentProvider cp;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,6 +52,20 @@ public class MainActivity extends AppCompatActivity {
         fab.setOnClickListener(v->{
             startActivityForResult(intent, 100);
         });
+    }
+
+    private void ShowContact(){
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M &&
+            checkSelfPermission(Manifest.permission.READ_CONTACTS)
+            != PackageManager.PERMISSION_GRANTED){
+            requestPermissions(new String[]{Manifest.permission.READ_CONTACTS},
+                    1);
+        } else{
+            cp = new ContentProvider(this);
+            listContact =cp.getAllContect();
+            contactAdapter = new ContactAdapter(listContact, this);
+            listView.setAdapter(contactAdapter);
+        }
     }
 
     @Override
@@ -143,9 +165,11 @@ public class MainActivity extends AppCompatActivity {
 
     private void Init() {
         listView = findViewById(R.id.listView);
+        edtFineName = findViewById(R.id.edtFineName);
         fab = findViewById(R.id.fab);
-        db = new MyDB(this, "ContactDB", null, 1);
-        listContact = db.getAllContact();
+//        db = new MyDB(this, "ContactDB", null, 1);
+//        listContact = db.getAllContact();
+        ShowContact();
         contactAdapter = new ContactAdapter(listContact, this);
         contactAdapter.notifyDataSetChanged();
         listView.setAdapter(contactAdapter);
@@ -156,6 +180,24 @@ public class MainActivity extends AppCompatActivity {
             public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
                 selectedItemId=position;
                 return false;
+            }
+        });
+
+        edtFineName.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                contactAdapter.getFilter().filter(s.toString());
+                contactAdapter.notifyDataSetChanged();
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
             }
         });
     }

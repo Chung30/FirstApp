@@ -6,15 +6,17 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.Filter;
+import android.widget.Filterable;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.util.ArrayList;
 
-public class ContactAdapter extends BaseAdapter {
+public class ContactAdapter extends BaseAdapter implements Filterable {
     public void setData(ArrayList<Contact> data){this.data = data;}
     private ArrayList<Contact> data;
-    private ArrayList<Contact> databackup;
+    private ArrayList<Contact> dataBackup;
     private Activity context;
     private LayoutInflater inflater;
     public ContactAdapter(){
@@ -52,5 +54,45 @@ public class ContactAdapter extends BaseAdapter {
         TextView tvphone = v.findViewById(R.id.tvPhone);
         tvphone.setText(data.get(position).getPhone());
         return v;
+    }
+
+    @Override
+    public Filter getFilter() {
+        Filter f = new Filter() {
+            @Override
+            protected FilterResults performFiltering(CharSequence constraint) {
+                FilterResults fr = new FilterResults();
+                if(dataBackup == null)
+                    dataBackup = new ArrayList<>(data);
+
+                if(constraint == null || constraint.length() == 0){
+                    fr.count = dataBackup.size();
+                    fr.values = dataBackup;
+                }
+                else {
+                    ArrayList<Contact> newData = new ArrayList<>();
+                    for(Contact c : dataBackup){
+                        if(c.getName().toLowerCase().contains(
+                                constraint.toString().toLowerCase())){
+                            newData.add(c);
+                        }
+                    }
+                    fr.count = newData.size();
+                    fr.values = newData;
+                }
+                return fr;
+            }
+
+            @Override
+            protected void publishResults(CharSequence constraint, FilterResults results) {
+                data = new ArrayList<>();
+                ArrayList<Contact> tmp = (ArrayList<Contact>) results.values;
+                for(Contact c : tmp){
+                    data.add(c);
+                }
+                notifyDataSetChanged();
+            }
+        };
+        return f;
     }
 }
